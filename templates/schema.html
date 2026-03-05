@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title_extra %} — Schema{% endblock %}
+{% block content %}
+<h2 class="mb-4">Providörschema 2026</h2>
+
+<div class="table-responsive">
+  <table class="table table-bordered bg-white">
+    <thead class="table-dark">
+      <tr>
+        <th>Datum</th>
+        <th>Grad</th>
+        {% for role in roles %}
+        <th>{{ role }}</th>
+        {% endfor %}
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for m in meetings %}
+      <tr>
+        <td><strong>{{ m.date.strftime('%d %b') }}</strong></td>
+        <td><span class="badge bg-secondary">{{ m.grad }}</span></td>
+        {% for role in roles %}
+          {% set a = m.assignments | selectattr('role', 'equalto', role) | first %}
+          <td>
+            {% if a and a.user %}
+              <span class="badge bg-success">{{ a.user.display_name }}</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        {% endfor %}
+        <td>
+          <a href="{{ url_for('meeting_detail', meeting_id=m.id) }}" class="btn btn-w6 btn-sm">Detaljer</a>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
