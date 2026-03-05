@@ -1,5 +1,4 @@
-__pycache__/
-*.pyc
+node_modules/
 w6.db
+sessions.db
 .env
-*.egg-info/

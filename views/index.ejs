@@ -1,0 +1,77 @@
+<%- include('layout_head') %>
+<h1 class="mb-4">Hej <%= currentUser.display_name %>!</h1>
+
+<div class="row">
+  <div class="col-lg-6 mb-4">
+    <div class="card p-3">
+      <h4>Mina kommande pass</h4>
+      <% if (myAssignments.length) { %>
+      <ul class="list-group list-group-flush">
+        <% for (const a of myAssignments) { %>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <strong><%= formatDateShort(a.date) %></strong> — <%= a.grad %><br>
+            <span class="text-muted"><%= a.role %></span>
+          </div>
+          <div>
+            <a href="/swap/request/<%= a.id %>" class="btn btn-outline-secondary btn-sm">Byt pass</a>
+            <a href="/checklist/<%= a.meeting_id %>" class="btn btn-outline-secondary btn-sm">Checklista</a>
+          </div>
+        </li>
+        <% } %>
+      </ul>
+      <% } else { %>
+      <p class="text-muted mt-2">Du har inga tilldelade pass. <a href="/schema">Anmäl dig!</a></p>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="col-lg-6 mb-4">
+    <div class="card p-3">
+      <h4>Bytesförfrågningar till dig</h4>
+      <% if (pendingSwaps.length) { %>
+      <ul class="list-group list-group-flush">
+        <% for (const sr of pendingSwaps) { %>
+        <li class="list-group-item">
+          <strong><%= sr.requester_name %></strong> vill byta
+          <em><%= sr.assignment_role %></em> (<%= formatDateShort(sr.date) %>)
+          <% if (sr.message) { %><br><small class="text-muted"><%= sr.message %></small><% } %>
+          <form method="post" action="/swap/respond/<%= sr.id %>" class="mt-2">
+            <button name="action" value="accept" class="btn btn-sm btn-success">Acceptera</button>
+            <button name="action" value="decline" class="btn btn-sm btn-outline-danger">Neka</button>
+          </form>
+        </li>
+        <% } %>
+      </ul>
+      <% } else { %>
+      <p class="text-muted mt-2">Inga bytesförfrågningar just nu.</p>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<div class="card p-3">
+  <h4>Kommande logekvällar</h4>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Datum</th><th>Grad</th><th>Bemannade roller</th><th></th></tr></thead>
+      <tbody>
+      <% for (const m of upcoming) { %>
+        <tr>
+          <td><%= formatDate(m.date) %></td>
+          <td><span class="badge bg-secondary"><%= m.grad %></span></td>
+          <td>
+            <div class="progress" style="height:20px;">
+              <div class="progress-bar bg-success" style="width:<%= m.total ? (m.filled/m.total*100) : 0 %>%">
+                <%= m.filled %>/<%= m.total %>
+              </div>
+            </div>
+          </td>
+          <td><a href="/meeting/<%= m.id %>" class="btn btn-w6 btn-sm">Visa</a></td>
+        </tr>
+      <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('layout_foot') %>
