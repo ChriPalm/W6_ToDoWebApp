@@ -26,21 +26,21 @@
 <% if (currentUser) { %>
 <nav class="navbar navbar-expand-lg mb-4">
   <div class="container">
-    <a class="navbar-brand fw-bold" href="/">W:6</a>
+    <a class="navbar-brand fw-bold" href="<%= basePath %>/">W:6</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="nav">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="/">Hem</a></li>
-        <li class="nav-item"><a class="nav-link" href="/schema">Schema</a></li>
-        <li class="nav-item"><a class="nav-link" href="/swaps">Byten</a></li>
-        <li class="nav-item"><a class="nav-link" href="/lager">Lager</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= basePath %>/">Hem</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= basePath %>/schema">Schema</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= basePath %>/swaps">Byten</a></li>
+        <li class="nav-item"><a class="nav-link" href="<%= basePath %>/lager">Lager</a></li>
       </ul>
       <span class="navbar-text text-light me-3">
         <%= currentUser.display_name %> <span class="badge badge-role"><%= currentUser.role %></span>
       </span>
-      <a class="btn btn-outline-light btn-sm" href="/logout">Logga ut</a>
+      <a class="btn btn-outline-light btn-sm" href="<%= basePath %>/logout">Logga ut</a>
     </div>
   </div>
 </nav>

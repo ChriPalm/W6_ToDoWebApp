@@ -7,13 +7,15 @@ const { initDb, getDb, hashPassword, verifyPassword } = require("./db");
 const { seedDatabase, ASSIGNMENT_ROLES } = require("./seed");
 
 const app = express();
+const router = express.Router();
 const PORT = process.env.PORT || 3000;
+const BASE_PATH = process.env.BASE_PATH || "/todoapp";
 
 // --- Middleware ---
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(BASE_PATH, express.static(path.join(__dirname, "public")));
 app.use(
   session({
     store: new SQLiteStore({ db: "sessions.db", dir: __dirname }),
@@ -23,6 +25,9 @@ app.use(
     cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 },
   })
 );
+
+// Make basePath available in all templates
+app.locals.basePath = BASE_PATH;
 
 // Make user available in all templates
 app.use((req, res, next) => {
@@ -37,7 +42,7 @@ function flash(req, msg, type = "success") {
 }
 
 function requireLogin(req, res, next) {
-  if (!req.session.user) return res.redirect("/login");
+  if (!req.session.user) return res.redirect(BASE_PATH + "/login");
   next();
 }
 
@@ -57,56 +62,56 @@ app.locals.ASSIGNMENT_ROLES = ASSIGNMENT_ROLES;
 
 // ── Auth ─────────────────────────────────────────────
 
-app.get("/login", (req, res) => {
-  if (req.session.user) return res.redirect("/");
+router.get("/login", (req, res) => {
+  if (req.session.user) return res.redirect(BASE_PATH + "/");
   res.render("login");
 });
 
-app.post("/login", (req, res) => {
+router.post("/login", (req, res) => {
   const db = getDb();
   const user = db.prepare("SELECT * FROM users WHERE username = ?").get(req.body.username);
   if (user && verifyPassword(req.body.password, user.password_hash)) {
     req.session.user = { id: user.id, username: user.username, display_name: user.display_name, role: user.role };
-    return res.redirect("/");
+    return res.redirect(BASE_PATH + "/");
   }
   flash(req, "Fel användarnamn eller lösenord.", "danger");
-  res.redirect("/login");
+  res.redirect(BASE_PATH + "/login");
 });
 
-app.get("/register", (req, res) => res.render("register"));
+router.get("/register", (req, res) => res.render("register"));
 
-app.post("/register", (req, res) => {
+router.post("/register", (req, res) => {
   const db = getDb();
   const { username, display_name, password } = req.body;
   if (!username || !display_name || !password) {
     flash(req, "Alla fält måste fyllas i.", "danger");
-    return res.redirect("/register");
+    return res.redirect(BASE_PATH + "/register");
   }
   const existing = db.prepare("SELECT id FROM users WHERE username = ?").get(username.trim());
   if (existing) {
     flash(req, "Användarnamnet är upptaget.", "danger");
-    return res.redirect("/register");
+    return res.redirect(BASE_PATH + "/register");
   }
   if (password.length < 3) {
     flash(req, "Lösenordet måste vara minst 3 tecken.", "danger");
-    return res.redirect("/register");
+    return res.redirect(BASE_PATH + "/register");
   }
   const result = db.prepare(
     "INSERT INTO users (username, display_name, password_hash) VALUES (?, ?, ?)"
   ).run(username.trim(), display_name.trim(), hashPassword(password));
   req.session.user = { id: result.lastInsertRowid, username: username.trim(), display_name: display_name.trim(), role: "Medlem" };
   flash(req, `Välkommen ${display_name.trim()}!`, "success");
-  res.redirect("/");
+  res.redirect(BASE_PATH + "/");
 });
 
-app.get("/logout", (req, res) => {
+router.get("/logout", (req, res) => {
   req.session.destroy();
-  res.redirect("/login");
+  res.redirect(BASE_PATH + "/login");
 });
 
 // ── Dashboard ────────────────────────────────────────
 
-app.get("/", requireLogin, (req, res) => {
+router.get("/", requireLogin, (req, res) => {
   const db = getDb();
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = db.prepare("SELECT * FROM meetings WHERE date >= ? ORDER BY date").all(today);
@@ -143,7 +148,7 @@ app.get("/", requireLogin, (req, res) => {
 
 // ── Schema ───────────────────────────────────────────
 
-app.get("/schema", requireLogin, (req, res) => {
+router.get("/schema", requireLogin, (req, res) => {
   const db = getDb();
   const meetings = db.prepare("SELECT * FROM meetings ORDER BY date").all();
 
@@ -161,7 +166,7 @@ app.get("/schema", requireLogin, (req, res) => {
 
 // ── Meeting detail ───────────────────────────────────
 
-app.get("/meeting/:id", requireLogin, (req, res) => {
+router.get("/meeting/:id", requireLogin, (req, res) => {
   const db = getDb();
   const meeting = db.prepare("SELECT * FROM meetings WHERE id = ?").get(req.params.id);
   if (!meeting) return res.status(404).send("Mötet hittades inte");
@@ -180,7 +185,7 @@ app.get("/meeting/:id", requireLogin, (req, res) => {
 
 // ── Signup / Assign ──────────────────────────────────
 
-app.post("/signup/:assignmentId", requireLogin, (req, res) => {
+router.post("/signup/:assignmentId", requireLogin, (req, res) => {
   const db = getDb();
   const a = db.prepare("SELECT * FROM assignments WHERE id = ?").get(req.params.assignmentId);
   if (!a) return res.status(404).send("Hittades inte");
@@ -190,10 +195,10 @@ app.post("/signup/:assignmentId", requireLogin, (req, res) => {
     db.prepare("UPDATE assignments SET user_id = ? WHERE id = ?").run(req.session.user.id, a.id);
     flash(req, `Du är nu anmäld som ${a.role}!`, "success");
   }
-  res.redirect(`/meeting/${a.meeting_id}`);
+  res.redirect(`${BASE_PATH}/meeting/${a.meeting_id}`);
 });
 
-app.post("/unassign/:assignmentId", requireLogin, (req, res) => {
+router.post("/unassign/:assignmentId", requireLogin, (req, res) => {
   const db = getDb();
   const a = db.prepare("SELECT * FROM assignments WHERE id = ?").get(req.params.assignmentId);
   if (!a) return res.status(404).send("Hittades inte");
@@ -203,10 +208,10 @@ app.post("/unassign/:assignmentId", requireLogin, (req, res) => {
     db.prepare("UPDATE assignments SET user_id = NULL WHERE id = ?").run(a.id);
     flash(req, "Avanmäld.", "info");
   }
-  res.redirect(`/meeting/${a.meeting_id}`);
+  res.redirect(`${BASE_PATH}/meeting/${a.meeting_id}`);
 });
 
-app.post("/assign/:assignmentId", requireLogin, (req, res) => {
+router.post("/assign/:assignmentId", requireLogin, (req, res) => {
   if (req.session.user.role !== "OP") return res.status(403).send("Ej behörig");
   const db = getDb();
   const a = db.prepare("SELECT * FROM assignments WHERE id = ?").get(req.params.assignmentId);
@@ -214,12 +219,12 @@ app.post("/assign/:assignmentId", requireLogin, (req, res) => {
   const userId = req.body.user_id ? parseInt(req.body.user_id) : null;
   db.prepare("UPDATE assignments SET user_id = ? WHERE id = ?").run(userId, a.id);
   flash(req, "Uppdaterad.", "success");
-  res.redirect(`/meeting/${a.meeting_id}`);
+  res.redirect(`${BASE_PATH}/meeting/${a.meeting_id}`);
 });
 
 // ── Swap requests ────────────────────────────────────
 
-app.get("/swap/request/:assignmentId", requireLogin, (req, res) => {
+router.get("/swap/request/:assignmentId", requireLogin, (req, res) => {
   const db = getDb();
   const a = db.prepare(`
     SELECT a.*, m.date, m.grad
@@ -229,14 +234,14 @@ app.get("/swap/request/:assignmentId", requireLogin, (req, res) => {
   if (!a) return res.status(404).send("Hittades inte");
   if (a.user_id !== req.session.user.id) {
     flash(req, "Du kan bara byta dina egna pass.", "danger");
-    return res.redirect(`/meeting/${a.meeting_id}`);
+    return res.redirect(`${BASE_PATH}/meeting/${a.meeting_id}`);
   }
   const users = db.prepare("SELECT id, display_name, role FROM users WHERE id != ? ORDER BY display_name")
     .all(req.session.user.id);
   res.render("swap_request", { assignment: a, users });
 });
 
-app.post("/swap/request/:assignmentId", requireLogin, (req, res) => {
+router.post("/swap/request/:assignmentId", requireLogin, (req, res) => {
   const db = getDb();
   const a = db.prepare("SELECT * FROM assignments WHERE id = ?").get(req.params.assignmentId);
   if (!a || a.user_id !== req.session.user.id) return res.status(403).send("Ej behörig");
@@ -245,10 +250,10 @@ app.post("/swap/request/:assignmentId", requireLogin, (req, res) => {
     "INSERT INTO swap_requests (assignment_id, requester_id, target_id, message) VALUES (?, ?, ?, ?)"
   ).run(a.id, req.session.user.id, targetId, req.body.message || "");
   flash(req, "Bytesförfrågan skickad!", "success");
-  res.redirect(`/meeting/${a.meeting_id}`);
+  res.redirect(`${BASE_PATH}/meeting/${a.meeting_id}`);
 });
 
-app.post("/swap/respond/:swapId", requireLogin, (req, res) => {
+router.post("/swap/respond/:swapId", requireLogin, (req, res) => {
   const db = getDb();
   const sr = db.prepare("SELECT * FROM swap_requests WHERE id = ?").get(req.params.swapId);
   if (!sr) return res.status(404).send("Hittades inte");
@@ -268,10 +273,10 @@ app.post("/swap/respond/:swapId", requireLogin, (req, res) => {
     db.prepare("UPDATE swap_requests SET status = 'declined' WHERE id = ?").run(sr.id);
     flash(req, "Bytesförfrågan nekad.", "info");
   }
-  res.redirect("/");
+  res.redirect(BASE_PATH + "/");
 });
 
-app.get("/swaps", requireLogin, (req, res) => {
+router.get("/swaps", requireLogin, (req, res) => {
   const db = getDb();
 
   const openSwaps = db.prepare(`
@@ -310,7 +315,7 @@ app.get("/swaps", requireLogin, (req, res) => {
 
 // ── Checklists ───────────────────────────────────────
 
-app.get("/checklist/:meetingId", requireLogin, (req, res) => {
+router.get("/checklist/:meetingId", requireLogin, (req, res) => {
   const db = getDb();
   const meeting = db.prepare("SELECT * FROM meetings WHERE id = ?").get(req.params.meetingId);
   if (!meeting) return res.status(404).send("Mötet hittades inte");
@@ -331,19 +336,19 @@ app.get("/checklist/:meetingId", requireLogin, (req, res) => {
   res.render("checklist", { meeting, phases });
 });
 
-app.post("/checklist/toggle/:itemId", requireLogin, (req, res) => {
+router.post("/checklist/toggle/:itemId", requireLogin, (req, res) => {
   const db = getDb();
   const item = db.prepare("SELECT * FROM checklist_items WHERE id = ?").get(req.params.itemId);
   if (!item) return res.status(404).send("Hittades inte");
   const newDone = item.done ? 0 : 1;
   const doneBy = newDone ? req.session.user.id : null;
   db.prepare("UPDATE checklist_items SET done = ?, done_by_id = ? WHERE id = ?").run(newDone, doneBy, item.id);
-  res.redirect(`/checklist/${item.meeting_id}`);
+  res.redirect(`${BASE_PATH}/checklist/${item.meeting_id}`);
 });
 
 // ── Inventory ────────────────────────────────────────
 
-app.get("/lager", requireLogin, (req, res) => {
+router.get("/lager", requireLogin, (req, res) => {
   const db = getDb();
   const items = db.prepare("SELECT * FROM inventory ORDER BY category, name").all();
   const categories = {};
@@ -354,7 +359,7 @@ app.get("/lager", requireLogin, (req, res) => {
   res.render("inventory", { categories });
 });
 
-app.post("/lager/update/:itemId", requireLogin, (req, res) => {
+router.post("/lager/update/:itemId", requireLogin, (req, res) => {
   const db = getDb();
   const stock = parseFloat(req.body.stock);
   if (isNaN(stock)) {
@@ -363,14 +368,16 @@ app.post("/lager/update/:itemId", requireLogin, (req, res) => {
     db.prepare("UPDATE inventory SET stock = ? WHERE id = ?").run(stock, req.params.itemId);
     flash(req, "Lagersaldo uppdaterat.", "success");
   }
-  res.redirect("/lager");
+  res.redirect(BASE_PATH + "/lager");
 });
 
-// ── Start ────────────────────────────────────────────
+// ── Mount router & Start ─────────────────────────────
+
+app.use(BASE_PATH, router);
 
 initDb();
 seedDatabase();
 
 app.listen(PORT, () => {
-  console.log(`W:6 Providörsapp körs på http://localhost:${PORT}`);
+  console.log(`W:6 Providörsapp körs på http://localhost:${PORT}${BASE_PATH}`);
 });

@@ -14,7 +14,7 @@
           <td class="<%= item.stock <= 1 ? 'stock-low' : 'stock-ok' %>"><%= item.stock %></td>
           <td><%= item.unit %></td>
           <td>
-            <form method="post" action="/lager/update/<%= item.id %>" class="d-flex" style="max-width:160px">
+            <form method="post" action="<%= basePath %>/lager/update/<%= item.id %>" class="d-flex" style="max-width:160px">
               <input type="number" name="stock" step="0.5" min="0" value="<%= item.stock %>" class="form-control form-control-sm me-1">
               <button class="btn btn-sm btn-outline-secondary">Spara</button>
             </form>

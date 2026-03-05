@@ -3,7 +3,7 @@
   <div class="col-md-5">
     <div class="card p-4">
       <h2 class="text-center mb-4">Skapa konto</h2>
-      <form method="post" action="/register">
+      <form method="post" action="<%= basePath %>/register">
         <div class="mb-3">
           <label class="form-label">Användarnamn</label>
           <input type="text" name="username" class="form-control" required autofocus>
@@ -19,7 +19,7 @@
         <button class="btn btn-w6 w-100">Registrera</button>
       </form>
       <p class="text-center mt-3 mb-0">
-        <a href="/login">Har redan konto? Logga in</a>
+        <a href="<%= basePath %>/login">Har redan konto? Logga in</a>
       </p>
     </div>
   </div>

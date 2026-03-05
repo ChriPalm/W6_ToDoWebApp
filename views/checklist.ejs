@@ -8,7 +8,7 @@
     <ul class="list-group list-group-flush">
     <% for (const item of items) { %>
       <li class="list-group-item d-flex align-items-center <%= item.done ? 'checklist-done' : '' %>">
-        <form method="post" action="/checklist/toggle/<%= item.id %>" class="me-3">
+        <form method="post" action="<%= basePath %>/checklist/toggle/<%= item.id %>" class="me-3">
           <button type="submit" class="btn btn-sm <%= item.done ? 'btn-success' : 'btn-outline-secondary' %>">
             <%= item.done ? '\u2713' : '\u00A0\u00A0' %>
           </button>
@@ -27,5 +27,5 @@
 </div>
 <% } %>
 
-<a href="/meeting/<%= meeting.id %>" class="btn btn-outline-secondary mt-3">Tillbaka</a>
+<a href="<%= basePath %>/meeting/<%= meeting.id %>" class="btn btn-outline-secondary mt-3">Tillbaka</a>
 <%- include('layout_foot') %>
