@@ -1,4 +1,7 @@
 node_modules/
 w6.db
+w6.db-shm
+w6.db-wal
 sessions.db
 .env
+__pycache__/
