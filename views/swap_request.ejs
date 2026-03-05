@@ -7,7 +7,7 @@
         Du vill byta ditt pass som <strong><%= assignment.role %></strong>
         den <strong><%= formatDate(assignment.date) %></strong>.
       </p>
-      <form method="post" action="/swap/request/<%= assignment.id %>">
+      <form method="post" action="<%= BASE %>/swap/request/<%= assignment.id %>">
         <div class="mb-3">
           <label class="form-label">Vem vill du byta med?</label>
           <select name="target_id" class="form-select">
@@ -22,7 +22,7 @@
           <textarea name="message" class="form-control" rows="2" placeholder="T.ex. anledning till byte..."></textarea>
         </div>
         <button class="btn btn-w6">Skicka förfrågan</button>
-        <a href="/meeting/<%= assignment.meeting_id %>" class="btn btn-outline-secondary">Avbryt</a>
+        <a href="<%= BASE %>/meeting/<%= assignment.meeting_id %>" class="btn btn-outline-secondary">Avbryt</a>
       </form>
     </div>
   </div>

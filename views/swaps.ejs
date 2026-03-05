@@ -13,7 +13,7 @@
         <% if (sr.message) { %><br><small class="text-muted"><%= sr.message %></small><% } %>
       </div>
       <% if (sr.requester_id !== currentUser.id) { %>
-      <form method="post" action="/swap/respond/<%= sr.id %>">
+      <form method="post" action="<%= BASE %>/swap/respond/<%= sr.id %>">
         <button name="action" value="take" class="btn btn-w6 btn-sm">Jag tar det!</button>
       </form>
       <% } %>
@@ -32,7 +32,7 @@
       <strong><%= sr.requester_name %></strong> vill byta
       <em><%= sr.assignment_role %></em> (<%= formatDateShort(sr.date) %>)
       <% if (sr.message) { %><br><small class="text-muted"><%= sr.message %></small><% } %>
-      <form method="post" action="/swap/respond/<%= sr.id %>" class="mt-2">
+      <form method="post" action="<%= BASE %>/swap/respond/<%= sr.id %>" class="mt-2">
         <button name="action" value="accept" class="btn btn-sm btn-success">Acceptera</button>
         <button name="action" value="decline" class="btn btn-sm btn-outline-danger">Neka</button>
       </form>

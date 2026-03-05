@@ -21,17 +21,17 @@
             </td>
             <td>
               <% if (!a.user_id) { %>
-                <form method="post" action="/signup/<%= a.id %>" class="d-inline">
+                <form method="post" action="<%= BASE %>/signup/<%= a.id %>" class="d-inline">
                   <button class="btn btn-w6 btn-sm">Anmäl mig</button>
                 </form>
               <% } else if (a.user_id === currentUser.id) { %>
-                <form method="post" action="/unassign/<%= a.id %>" class="d-inline">
+                <form method="post" action="<%= BASE %>/unassign/<%= a.id %>" class="d-inline">
                   <button class="btn btn-outline-danger btn-sm">Avanmäl</button>
                 </form>
-                <a href="/swap/request/<%= a.id %>" class="btn btn-outline-secondary btn-sm">Byt</a>
+                <a href="<%= BASE %>/swap/request/<%= a.id %>" class="btn btn-outline-secondary btn-sm">Byt</a>
               <% } %>
               <% if (currentUser.role === 'OP') { %>
-                <form method="post" action="/assign/<%= a.id %>" class="d-inline ms-1">
+                <form method="post" action="<%= BASE %>/assign/<%= a.id %>" class="d-inline ms-1">
                   <select name="user_id" class="form-select form-select-sm d-inline-block" style="width:auto" onchange="this.form.submit()">
                     <option value="">— Tilldela —</option>
                     <% for (const u of users) { %>
@@ -51,8 +51,8 @@
   <div class="col-lg-4">
     <div class="card p-3">
       <h5>Snabblänkar</h5>
-      <a href="/checklist/<%= meeting.id %>" class="btn btn-w6 w-100 mb-2">Checklista</a>
-      <a href="/lager" class="btn btn-outline-secondary w-100">Lagerstatus</a>
+      <a href="<%= BASE %>/checklist/<%= meeting.id %>" class="btn btn-w6 w-100 mb-2">Checklista</a>
+      <a href="<%= BASE %>/lager" class="btn btn-outline-secondary w-100">Lagerstatus</a>
     </div>
   </div>
 </div>
