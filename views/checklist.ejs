@@ -1,0 +1,31 @@
+<%- include('layout_head') %>
+<h2>Checklista — <%= formatDate(meeting.date) %> (<%= meeting.grad %>)</h2>
+
+<% for (const [phase, items] of Object.entries(phases)) { %>
+<div class="mt-4">
+  <div class="phase-header mb-2"><%= phase %></div>
+  <div class="card">
+    <ul class="list-group list-group-flush">
+    <% for (const item of items) { %>
+      <li class="list-group-item d-flex align-items-center <%= item.done ? 'checklist-done' : '' %>">
+        <form method="post" action="/checklist/toggle/<%= item.id %>" class="me-3">
+          <button type="submit" class="btn btn-sm <%= item.done ? 'btn-success' : 'btn-outline-secondary' %>">
+            <%= item.done ? '\u2713' : '\u00A0\u00A0' %>
+          </button>
+        </form>
+        <div class="flex-grow-1">
+          <strong><%= item.description %></strong><br>
+          <small class="text-muted"><%= item.responsible %> &mdash; <%= item.time_when %></small>
+        </div>
+        <% if (item.done && item.done_by_name) { %>
+        <small class="text-success"><%= item.done_by_name %></small>
+        <% } %>
+      </li>
+    <% } %>
+    </ul>
+  </div>
+</div>
+<% } %>
+
+<a href="/meeting/<%= meeting.id %>" class="btn btn-outline-secondary mt-3">Tillbaka</a>
+<%- include('layout_foot') %>

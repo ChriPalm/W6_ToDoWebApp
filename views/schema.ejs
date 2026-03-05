@@ -1,0 +1,37 @@
+<%- include('layout_head') %>
+<h2 class="mb-4">Providörschema 2026</h2>
+
+<div class="table-responsive">
+  <table class="table table-bordered bg-white">
+    <thead class="table-dark">
+      <tr>
+        <th>Datum</th>
+        <th>Grad</th>
+        <% for (const role of ASSIGNMENT_ROLES) { %>
+        <th><%= role %></th>
+        <% } %>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    <% for (const m of meetings) { %>
+      <tr>
+        <td><strong><%= formatDateShort(m.date) %></strong></td>
+        <td><span class="badge bg-secondary"><%= m.grad %></span></td>
+        <% for (const role of ASSIGNMENT_ROLES) { %>
+          <% const a = m.assignments.find(x => x.role === role); %>
+          <td>
+            <% if (a && a.display_name) { %>
+              <span class="badge bg-success"><%= a.display_name %></span>
+            <% } else { %>
+              <span class="text-muted">—</span>
+            <% } %>
+          </td>
+        <% } %>
+        <td><a href="/meeting/<%= m.id %>" class="btn btn-w6 btn-sm">Detaljer</a></td>
+      </tr>
+    <% } %>
+    </tbody>
+  </table>
+</div>
+<%- include('layout_foot') %>

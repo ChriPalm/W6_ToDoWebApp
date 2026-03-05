@@ -1,0 +1,17 @@
+{
+  "name": "w6-providorsapp",
+  "version": "1.0.0",
+  "description": "W:6 Providörsapp — uppgiftshantering för logekvällar",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "connect-sqlite3": "^0.9.15",
+    "ejs": "^3.1.10",
+    "express": "^4.21.0",
+    "express-session": "^1.18.1"
+  }
+}

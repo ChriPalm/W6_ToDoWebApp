@@ -1,0 +1,59 @@
+<%- include('layout_head') %>
+<h2>Logekväll <%= formatDate(meeting.date) %> — <%= meeting.grad %></h2>
+
+<div class="row mt-4">
+  <div class="col-lg-8">
+    <div class="card p-3 mb-4">
+      <h4>Roller & Bemanning</h4>
+      <table class="table mb-0">
+        <thead><tr><th>Roll</th><th>Tilldelad</th><th>Åtgärd</th></tr></thead>
+        <tbody>
+        <% for (const a of meeting.assignments) { %>
+          <tr>
+            <td><strong><%= a.role %></strong></td>
+            <td>
+              <% if (a.display_name) { %>
+                <%= a.display_name %>
+                <span class="badge badge-role"><%= a.user_role %></span>
+              <% } else { %>
+                <span class="text-danger">Ledig plats</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (!a.user_id) { %>
+                <form method="post" action="/signup/<%= a.id %>" class="d-inline">
+                  <button class="btn btn-w6 btn-sm">Anmäl mig</button>
+                </form>
+              <% } else if (a.user_id === currentUser.id) { %>
+                <form method="post" action="/unassign/<%= a.id %>" class="d-inline">
+                  <button class="btn btn-outline-danger btn-sm">Avanmäl</button>
+                </form>
+                <a href="/swap/request/<%= a.id %>" class="btn btn-outline-secondary btn-sm">Byt</a>
+              <% } %>
+              <% if (currentUser.role === 'OP') { %>
+                <form method="post" action="/assign/<%= a.id %>" class="d-inline ms-1">
+                  <select name="user_id" class="form-select form-select-sm d-inline-block" style="width:auto" onchange="this.form.submit()">
+                    <option value="">— Tilldela —</option>
+                    <% for (const u of users) { %>
+                    <option value="<%= u.id %>" <%= a.user_id === u.id ? 'selected' : '' %>><%= u.display_name %></option>
+                    <% } %>
+                  </select>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card p-3">
+      <h5>Snabblänkar</h5>
+      <a href="/checklist/<%= meeting.id %>" class="btn btn-w6 w-100 mb-2">Checklista</a>
+      <a href="/lager" class="btn btn-outline-secondary w-100">Lagerstatus</a>
+    </div>
+  </div>
+</div>
+<%- include('layout_foot') %>
