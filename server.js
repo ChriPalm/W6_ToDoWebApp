@@ -1,4 +1,5 @@
 const express = require("express");
+const compression = require("compression");
 const session = require("express-session");
 const SQLiteStore = require("connect-sqlite3")(session);
 const path = require("path");
@@ -13,8 +14,9 @@ const BASE = process.env.BASE_PATH || "";
 // --- Middleware ---
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+app.use(compression());
 app.use(express.urlencoded({ extended: true }));
-app.use(BASE + "/", express.static(path.join(__dirname, "public")));
+app.use(BASE + "/", express.static(path.join(__dirname, "public"), { maxAge: "7d" }));
 app.use(
   session({
     store: new SQLiteStore({ db: "sessions.db", dir: __dirname }),
